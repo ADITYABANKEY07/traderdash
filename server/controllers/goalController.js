@@ -122,9 +122,9 @@ const computeGoalMetrics = (goal, liveAchieved) => {
   };
 };
 
-// @desc    Get the active goal with LIVE achieved (summed from real PnLEntry
-//          data), computed metrics, and auto-generated progress series.
-//          Every time a trader submits a P&L entry, this endpoint reflects it.
+// @desc    Get the active goal with LIVE achieved, metrics, progress series,
+//          and an isCompleted flag. If completed, the goal is automatically
+//          marked inactive so the frontend can prompt to set a new goal.
 // @route   GET /goals/active
 // @access  Private (Admin)
 export const getActiveGoal = asyncHandler(async (req, res) => {
@@ -135,16 +135,49 @@ export const getActiveGoal = asyncHandler(async (req, res) => {
     throw new Error("No active goal found");
   }
 
-  // Compute achieved live from PnLEntry submissions — ignores goal.achieved field
   const liveAchieved = await computeLiveAchieved(goal);
+  const isCompleted  = liveAchieved >= goal.target;
 
-  // Attach the live value to the goal object before sending
-  const goalWithLive = { ...goal.toObject(), achieved: liveAchieved };
+  // Auto-deactivate the goal once it's completed so the frontend knows to
+  // prompt for a new goal rather than continuing to show the active tracker.
+  if (isCompleted && goal.isActive) {
+    goal.isActive     = false;
+    goal.completedOn  = goal.completedOn || new Date();
+    await goal.save();
+  }
 
+  const goalWithLive = { ...goal.toObject(), achieved: liveAchieved, isCompleted };
   const metrics      = computeGoalMetrics(goal, liveAchieved);
   const progressData = await buildProgressSeries(goal);
 
-  res.status(200).json({ goal: goalWithLive, metrics, progressData });
+  res.status(200).json({ goal: goalWithLive, metrics, progressData, isCompleted });
+});
+
+// @desc    Get all completed / past goals, each enriched with their final
+//          achieved amount and progress data — shown in the Goal History view.
+// @route   GET /goals/history
+// @access  Private (Admin)
+export const getGoalHistory = asyncHandler(async (req, res) => {
+  const pastGoals = await Goal.find({ isActive: false }).sort({ createdAt: -1 });
+
+  const enriched = await Promise.all(
+    pastGoals.map(async (goal) => {
+      const liveAchieved = await computeLiveAchieved(goal);
+      const isCompleted  = liveAchieved >= goal.target;
+      const metrics      = computeGoalMetrics(goal, liveAchieved);
+      const progressData = await buildProgressSeries(goal);
+
+      return {
+        ...goal.toObject(),
+        achieved:     liveAchieved,
+        isCompleted,
+        metrics,
+        progressData,
+      };
+    })
+  );
+
+  res.status(200).json(enriched);
 });
 
 // @desc    Get all goals (history)

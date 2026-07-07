@@ -6,8 +6,8 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-
-      <main className="flex-1 bg-slate-950 p-6 overflow-y-auto text-white">
+      {/* pt-14 on mobile offsets the fixed topbar (h ≈ 56px); removed on lg where sidebar is static */}
+      <main className="flex-1 bg-slate-950 p-6 pt-20 lg:pt-6 overflow-y-auto text-white">
         <Outlet />
       </main>
     </div>

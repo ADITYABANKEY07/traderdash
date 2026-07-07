@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getActiveGoal,
+  getGoalHistory,
   getGoals,
   createGoal,
   updateGoal,
@@ -14,8 +15,9 @@ const router = express.Router();
 
 router.use(protect); // every goal route requires a logged-in admin
 
-router.get("/active", getActiveGoal); // GET /goals/active -> goal + countdown/pace metrics
-router.route("/").get(getGoals).post(createGoal); // POST /goals -> "Set Goal" button
+router.get("/active", getActiveGoal);      // active goal + live metrics
+router.get("/history", getGoalHistory);    // all completed/past goals with full details
+router.route("/").get(getGoals).post(createGoal);
 router.route("/:id").put(updateGoal).delete(deleteGoal);
 router.route("/:id/progress").get(getGoalProgress).post(upsertGoalProgress);
 
