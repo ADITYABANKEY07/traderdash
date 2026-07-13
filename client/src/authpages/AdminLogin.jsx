@@ -23,7 +23,7 @@ const AdminLogin = () => {
     setError("");
     setLoading(true);
     try {
-      const api = "http://localhost:7007/admin/login";
+      const api = "https://traderdash-c8fz.onrender.com/admin/login";
       const res = await axios.post(api, input);
       // Backend returns { _id, name, email, role, token } on successful login
       const { token, ...admin } = res.data;
