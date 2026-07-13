@@ -10,7 +10,7 @@ import {
   ChevronDown, ChevronUp, History, PlusCircle, Save,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:7007";
+const API_BASE = "https://traderdash-c8fz.onrender.com/";
 const COLORS = { actual: "#22d3ee", target: "#64748b", grid: "#1e293b" };
 
 const currency = (n) =>

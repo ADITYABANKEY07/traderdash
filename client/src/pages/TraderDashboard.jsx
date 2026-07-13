@@ -11,7 +11,7 @@ import {
   LineChart as LineChartIcon,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:7007";
+const API_BASE = "https://traderdash-c8fz.onrender.com/";
 
 const currency = (n) =>
   `\u20b9${Math.abs(Math.round(n)).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;

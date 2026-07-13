@@ -23,7 +23,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:7007";
+const API_BASE = "https://traderdash-c8fz.onrender.com/";
 
 const COLORS = {
   accent: "#22d3ee",
