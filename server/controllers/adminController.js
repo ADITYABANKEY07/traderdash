@@ -30,7 +30,7 @@ export const registerAdmin = asyncHandler(async (req, res) => {
     name: admin.name,
     email: admin.email,
     role: admin.role,
-    token: generateToken(admin._id, "admin"),
+    token: generateToken(admin._id),
   });
 });
 

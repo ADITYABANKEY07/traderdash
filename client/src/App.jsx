@@ -13,6 +13,7 @@ import TraderLogin from "./authpages/TraderLogin";
 import TraderSignup from "./authpages/TraderSignup";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import TraderProtectedRoute from "./components/TraderProtectedRoute";
+import AdminSignup from "./authpages/AdminSignup";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
       <Route path="/" element={<Navigate to="/admin-login" replace />} />
 
       {/* Admin auth */}
+      <Route path="admin-signup" element={<AdminSignup />} />
       <Route path="admin-login" element={<AdminLogin />} />
 
       {/* Admin dashboard — everything under /admin/* */}
