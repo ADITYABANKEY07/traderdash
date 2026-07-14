@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Sun, Moon, Monitor, Loader2 } from "lucide-react";
 
-const API_BASE = "https://traderdash-c8fz.onrender.com/";
+const API_BASE = "https://traderdash-c8fz.onrender.com/settings";
 
 // ---------------------------------------------------------------------------
 // Building blocks
