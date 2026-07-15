@@ -9,7 +9,7 @@ const goalSchema = new mongoose.Schema(
     },
     target: {
       type: Number,
-      required: true, // e.g. 420000
+      required: true,
     },
     achieved: {
       type: Number,
@@ -27,11 +27,16 @@ const goalSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    completedOn: {
+      type: Date,
+      default: null, // stamped automatically when achieved >= target
+    },
   },
   { timestamps: true }
 );
 
-// Monthly snapshots used to plot the "Goal Achievement Graph"
+// Monthly snapshots — kept for backwards compatibility / manual overrides.
+// Progress is now primarily auto-computed in goalController.buildProgressSeries.
 const goalProgressSchema = new mongoose.Schema(
   {
     goal: {
@@ -40,16 +45,16 @@ const goalProgressSchema = new mongoose.Schema(
       required: true,
     },
     month: {
-      type: String, // e.g. "Jan", "Feb"
+      type: String,
       required: true,
     },
     actual: {
       type: Number,
-      default: null, // null for months that haven't happened yet
+      default: null,
     },
     target: {
       type: Number,
-      required: true, // required pace for that month
+      required: true,
     },
   },
   { timestamps: true }

@@ -30,7 +30,8 @@ const computeLiveAchieved = async (goal) => {
 
 // Builds the monthly actual-vs-target progress series used in the achievement
 // graph. "actual" is the cumulative profit up to each month from real PnLEntry
-// data. "target" is the straight-line required pace across the goal period.
+// data. Returns null for months that haven't happened yet OR where no profit
+// has been submitted yet (so the chart doesn't draw a misleading flat zero line).
 const buildProgressSeries = async (goal) => {
   const start    = new Date(goal.startDate);
   const deadline = new Date(goal.deadline);
@@ -50,43 +51,45 @@ const buildProgressSeries = async (goal) => {
   // Fetch all positive P&L entries within the goal window
   const entries = await PnLEntry.find({
     date: { $gte: start, $lte: deadline },
-    pnl: { $gt: 0 },
+    pnl:  { $gt: 0 },
   }).lean();
 
   // Cumulative sum per calendar month
   const monthlyActual = new Map();
   for (const entry of entries) {
-    const d = new Date(entry.date);
+    const d   = new Date(entry.date);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     monthlyActual.set(key, (monthlyActual.get(key) || 0) + entry.pnl);
   }
 
-  // Build cumulative totals
-  let cumulative = 0;
+  let cumulative     = 0;
+  let hasAnyData     = false;
+
   return months.map((monthDate) => {
-    const key   = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`;
-    const label = MONTH_NAMES[monthDate.getMonth()];
+    const key        = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`;
+    const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+    const isPast     = endOfMonth <= today;
 
     // Required pace: straight line from 0 to target over the goal period
-    const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-    const daysIntoGoal = Math.min(daysBetween(start, endOfMonth), totalDays);
+    const daysIntoGoal  = Math.min(daysBetween(start, endOfMonth), totalDays);
     const targetAtMonth = Number(((daysIntoGoal / totalDays) * goal.target).toFixed(0));
 
-    // Actual: cumulative up to end of this month, null for future months
-    const isPast = endOfMonth <= today;
+    // Actual: accumulate past months; null for future months or months with no data yet
     if (isPast && monthlyActual.has(key)) {
       cumulative += monthlyActual.get(key);
+      hasAnyData  = true;
     }
 
     return {
-      month: label,
+      month:  MONTH_NAMES[monthDate.getMonth()],
       target: targetAtMonth,
-      actual: isPast ? cumulative : null,
+      // Only draw the actual line once at least one entry exists; never show 0
+      actual: isPast && hasAnyData ? cumulative : null,
     };
   });
 };
 
-// Core metrics computation — now takes the live achieved value as a parameter
+// Core metrics computation — takes the live achieved value as a parameter
 // instead of reading goal.achieved from the database.
 const computeGoalMetrics = (goal, liveAchieved) => {
   const today    = new Date();
@@ -100,21 +103,22 @@ const computeGoalMetrics = (goal, liveAchieved) => {
   const progressPct = Math.min(100, (liveAchieved / goal.target) * 100);
   const expectedPct = Math.min(100, (elapsedDays / totalDays) * 100);
 
-  const dailyRate = liveAchieved / elapsedDays;
-  const projectedDaysToGoal = dailyRate > 0 ? goal.target / dailyRate : Infinity;
-  const projectedFinishDate  =
-    dailyRate > 0 ? new Date(start.getTime() + projectedDaysToGoal * 86400000) : null;
+  const dailyRate            = liveAchieved / elapsedDays;
+  const projectedDaysToGoal  = dailyRate > 0 ? goal.target / dailyRate : Infinity;
+  const projectedFinishDate  = dailyRate > 0
+    ? new Date(start.getTime() + projectedDaysToGoal * 86400000)
+    : null;
 
-  const onTrack        = projectedFinishDate ? projectedFinishDate <= deadline : false;
-  const aheadBehindDays = projectedFinishDate ? daysBetween(projectedFinishDate, deadline) : null;
-  const remainingAmount = Math.max(0, goal.target - liveAchieved);
+  const onTrack          = projectedFinishDate ? projectedFinishDate <= deadline : false;
+  const aheadBehindDays  = projectedFinishDate ? daysBetween(projectedFinishDate, deadline) : null;
+  const remainingAmount  = Math.max(0, goal.target - liveAchieved);
 
   return {
     totalDays,
     elapsedDays,
     remainingDays,
-    progressPct:   Number(progressPct.toFixed(1)),
-    expectedPct:   Number(expectedPct.toFixed(1)),
+    progressPct:      Number(progressPct.toFixed(1)),
+    expectedPct:      Number(expectedPct.toFixed(1)),
     projectedFinishDate,
     onTrack,
     aheadBehindDays,
@@ -123,8 +127,7 @@ const computeGoalMetrics = (goal, liveAchieved) => {
 };
 
 // @desc    Get the active goal with LIVE achieved, metrics, progress series,
-//          and an isCompleted flag. If completed, the goal is automatically
-//          marked inactive so the frontend can prompt to set a new goal.
+//          and an isCompleted flag. If completed, auto-deactivates via atomic update.
 // @route   GET /goals/active
 // @access  Private (Admin)
 export const getActiveGoal = asyncHandler(async (req, res) => {
@@ -138,12 +141,13 @@ export const getActiveGoal = asyncHandler(async (req, res) => {
   const liveAchieved = await computeLiveAchieved(goal);
   const isCompleted  = liveAchieved >= goal.target;
 
-  // Auto-deactivate the goal once it's completed so the frontend knows to
-  // prompt for a new goal rather than continuing to show the active tracker.
+  // Auto-deactivate once completed — use findByIdAndUpdate to avoid
+  // issues with fields not yet present on the in-memory document.
   if (isCompleted && goal.isActive) {
-    goal.isActive     = false;
-    goal.completedOn  = goal.completedOn || new Date();
-    await goal.save();
+    await Goal.findByIdAndUpdate(goal._id, {
+      isActive:    false,
+      completedOn: goal.completedOn || new Date(),
+    });
   }
 
   const goalWithLive = { ...goal.toObject(), achieved: liveAchieved, isCompleted };
