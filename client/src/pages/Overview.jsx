@@ -37,12 +37,12 @@ const authHeaders = () => ({
 });
 
 const currency = (n) =>
-  `$${Math.abs(n).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  `\u20b9${Math.abs(Math.round(n)).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 const signedCurrency = (n) => `${n < 0 ? "-" : "+"}${currency(n)}`;
 
 const formatDate = (iso) => {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
+  return new Date(iso).toLocaleDateString("en-IN", {
     month: "short",
     day: "numeric",
     year: "numeric",
