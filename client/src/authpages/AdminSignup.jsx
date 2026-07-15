@@ -59,7 +59,7 @@ const AdminSignup = () => {
       const { token, ...admin } = res.data;
       localStorage.setItem("adminToken", token);
       localStorage.setItem("adminInfo", JSON.stringify(admin));
-      navigate("/overview");
+      navigate("/admin/overview");
     } catch (err) {
       setError(
         err?.response?.data?.message || "Could not create account. Please try again."
