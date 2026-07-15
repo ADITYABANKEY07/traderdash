@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { LineChart, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
-const API_BASE = "https://traderdash-c8fz.onrender.com/";
+const API_BASE = "https://traderdash-c8fz.onrender.com";
 
 const TraderLogin = () => {
   const navigate = useNavigate();
