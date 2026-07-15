@@ -22,7 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const API_BASE = "https://traderdash-c8fz.onrender.com/traders";
+const API_BASE = "https://traderdash-c8fz.onrender.com";
 
 // Icon fallback — the backend doesn't store a component reference, so pick a
 // reasonable icon by trader name where possible, otherwise a generic person icon.
