@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { LineChart, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { LineChart, Mail, Lock, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 
 const API_BASE = "https://traderdash-c8fz.onrender.com";
 
@@ -48,6 +48,22 @@ const TraderLogin = () => {
       </div>
 
       <div className="relative w-full max-w-sm">
+        {/* Role switcher */}
+        <div className="mb-6 flex items-center justify-center">
+          <div className="flex rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+            <Link
+              to="/admin-login"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Admin
+            </Link>
+            <span className="rounded-lg bg-emerald-500 px-4 py-1.5 text-xs font-semibold text-slate-950">
+              Trader
+            </span>
+          </div>
+        </div>
+
         {/* Brand */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10">

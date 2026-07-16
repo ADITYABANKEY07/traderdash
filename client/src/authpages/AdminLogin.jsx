@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ShieldCheck, Mail, Lock, Eye, EyeOff, Loader2, LineChart } from "lucide-react";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -47,6 +47,22 @@ const AdminLogin = () => {
       </div>
 
       <div className="relative w-full max-w-sm">
+        {/* Role switcher */}
+        <div className="mb-6 flex items-center justify-center">
+          <div className="flex rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+            <span className="rounded-lg bg-cyan-500 px-4 py-1.5 text-xs font-semibold text-slate-950">
+              Admin
+            </span>
+            <Link
+              to="/trader-login"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <LineChart className="h-3.5 w-3.5" />
+              Trader
+            </Link>
+          </div>
+        </div>
+
         {/* Brand */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-400/10">
@@ -150,8 +166,11 @@ const AdminLogin = () => {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
-          Restricted access &middot; Authorized personnel only
+        <p className="mt-4 text-center text-xs text-slate-600">
+          No account?{" "}
+          <Link to="/admin-signup" className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors">
+            Create admin account
+          </Link>
         </p>
       </div>
     </div>

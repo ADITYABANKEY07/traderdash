@@ -21,11 +21,13 @@ const authHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("traderToken")}` },
 });
 
-// Local datetime input expects "YYYY-MM-DDTHH:mm"
+// Returns current IST time formatted for a datetime-local input (YYYY-MM-DDTHH:mm)
 const nowForInput = () => {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
+  const now = new Date();
+  // Convert to IST (UTC+5:30)
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const ist = new Date(now.getTime() + istOffset);
+  return ist.toISOString().slice(0, 16);
 };
 
 function Panel({ title, subtitle, children, className = "" }) {
@@ -273,6 +275,7 @@ const TraderDashboard = () => {
                             year: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
+                            timeZone: "Asia/Kolkata",
                           })}
                         </td>
                         <td

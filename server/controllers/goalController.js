@@ -19,7 +19,7 @@ const computeLiveAchieved = async (goal) => {
     {
       $match: {
         date: { $gte: start, $lte: cutoff },
-        pnl: { $gt: 0 }, // only winning entries count as "achieved"
+        // Sum ALL entries (profits and losses) — net total is what "achieved" means
       },
     },
     { $group: { _id: null, total: { $sum: "$pnl" } } },
@@ -48,10 +48,9 @@ const buildProgressSeries = async (goal) => {
 
   const totalDays = daysBetween(start, deadline);
 
-  // Fetch all positive P&L entries within the goal window
+  // Fetch ALL P&L entries within the goal window (net profit = profits minus losses)
   const entries = await PnLEntry.find({
     date: { $gte: start, $lte: deadline },
-    pnl:  { $gt: 0 },
   }).lean();
 
   // Cumulative sum per calendar month
@@ -139,7 +138,7 @@ export const getActiveGoal = asyncHandler(async (req, res) => {
   }
 
   const liveAchieved = await computeLiveAchieved(goal);
-  const isCompleted  = liveAchieved >= goal.target;
+  const isCompleted  = liveAchieved > 0 && liveAchieved >= goal.target;
 
   // Auto-deactivate once completed — use findByIdAndUpdate to avoid
   // issues with fields not yet present on the in-memory document.
@@ -167,7 +166,7 @@ export const getGoalHistory = asyncHandler(async (req, res) => {
   const enriched = await Promise.all(
     pastGoals.map(async (goal) => {
       const liveAchieved = await computeLiveAchieved(goal);
-      const isCompleted  = liveAchieved >= goal.target;
+      const isCompleted  = liveAchieved > 0 && liveAchieved >= goal.target;
       const metrics      = computeGoalMetrics(goal, liveAchieved);
       const progressData = await buildProgressSeries(goal);
 

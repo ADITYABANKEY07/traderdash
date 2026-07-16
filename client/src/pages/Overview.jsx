@@ -37,12 +37,12 @@ const authHeaders = () => ({
 });
 
 const currency = (n) =>
-  `\u20b9${Math.abs(Math.round(n)).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  `₹${Math.abs(Math.round(n)).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 const signedCurrency = (n) => `${n < 0 ? "-" : "+"}${currency(n)}`;
 
 const formatDate = (iso) => {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-IN", {
+  return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -303,7 +303,7 @@ const Overview = () => {
                     tick={{ fill: "#64748b", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v) => `$${v / 1000}k`}
+                    tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`}
                   />
                   <Tooltip content={<CustomTooltip formatter={signedCurrency} />} />
                   <Line
@@ -341,7 +341,7 @@ const Overview = () => {
                     tick={{ fill: "#64748b", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v) => `$${v / 1000}k`}
+                    tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`}
                   />
                   <Tooltip content={<CustomTooltip formatter={signedCurrency} />} />
                   <Legend
