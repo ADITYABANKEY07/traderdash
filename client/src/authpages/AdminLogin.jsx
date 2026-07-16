@@ -165,13 +165,6 @@ const AdminLogin = () => {
             </button>
           </form>
         </div>
-
-        <p className="mt-4 text-center text-xs text-slate-600">
-          No account?{" "}
-          <Link to="/admin-signup" className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors">
-            Create admin account
-          </Link>
-        </p>
       </div>
     </div>
   );
